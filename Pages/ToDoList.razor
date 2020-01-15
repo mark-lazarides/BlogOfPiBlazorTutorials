@@ -1,0 +1,72 @@
+﻿@page "/todolist"
+
+@using BlazorBlogOfPiGettingStarted.Services
+@using BlazorBlogOfPiGettingStarted.Data
+@using BlazorBlogOfPiGettingStarted.Components
+
+@inject IToDoListService service
+
+<h1>To Do List</h1>
+
+<p>This component demonstrates fetching data from the database</p>
+
+
+@if (_toDoList is null)
+{
+    <p><em>fetchign data...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var td in _toDoList)
+            {
+                <tr>
+                    <td>@td.Name</td>
+                    <td>@td.Status</td>
+                    <td>@td.DueDate</td>
+                    <td><input type="button" class="btn btn-primary" value="Edit" /></td>
+                    <td><input type="button" class="btn btn-primary" value="Delete" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<!--  data-target is given the selector for the TaskDetail modal. See TaskDetail.razor -->
+<div>
+    <input type="button" data-toggle="modal" data-target="#taskModal" class="btn btn-primary" value="Add Item" @onclick="(()=>InitializeTaskObject())"/>
+</div>
+
+<TaskDetail TaskObject =taskObject DataChanged="@DataChanged"></TaskDetail>
+
+@code{
+  List<ToDo> _toDoList;
+  ToDo taskObject = new ToDo();
+
+  protected override async Task OnInitializedAsync()
+  {
+      _toDoList = await service.GetAsync();
+  }
+
+  private void InitializeTaskObject()
+  {
+      taskObject = new ToDo();
+      taskObject.DueDate = DateTime.Now;
+  }
+
+  private async void DataChanged()
+  {
+      _toDoList = await service.GetAsync();
+      StateHasChanged();
+  }
+}
+
